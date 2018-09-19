@@ -7,6 +7,8 @@ ARG RESTY_VERSION="1.13.6.2"
 ARG RESTY_OPENSSL_VERSION="1.0.2k"
 ARG RESTY_PCRE_VERSION="8.42"
 ARG RESTY_J="1"
+ARG CONSUL_TEMPLATE_VERSION="0.19.5"
+
 ARG RESTY_CONFIG_OPTIONS="\
     --with-file-aio \
     --with-http_addition_module \
@@ -94,17 +96,22 @@ RUN apk add --no-cache --virtual .build-deps \
         openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
         openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
         pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
-    && apk del .build-deps \
-    && mkdir -p /data/logs/supervisor \
+    && apk del .build-deps  
+
+ADD https://releases.hashicorp.com/consul-template/${CONSUL_TEMPLATE_VERSION}/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tgz /opt/app/consul-template/bin/consul-template.tgz 
+
+RUN cd /opt/app/consul-template/bin \
+    && ls \
+    && tar zxf consul-template.tgz  \
+    && ls -l \
+    && chmod +x /opt/app/consul-template/bin/consul-template \
+    && rm consul-template.tgz 
+
+RUN mkdir -p /data/logs/supervisor \
     && ln -sf /dev/stdout /data/logs/supervisor/nginx.log \
     && ln -sf /dev/stdout /data/logs/supervisor/consul-template.log \
     && ln -sf /dev/stderr /data/logs/supervisor/nginx_err.log \
     && ln -sf /dev/stderr /data/logs/supervisor/consul-template_err.log 
-
-# install consul-template
-ADD https://releases.hashicorp.com/consul-template/0.19.5/consul-template_0.19.5_linux_amd64.tgz /opt/app/consul-template/bin/consul-template
-
-RUN chmod +x /opt/app/consul-template/bin/consul-template
 
 # Add additional binaries into PATH for convenience
 ENV PATH=$PATH:/opt/app/openresty/luajit/bin:/opt/app/nginx/sbin:/opt/app/openresty/bin:/opt/app/consul-template/bin
@@ -112,10 +119,9 @@ ENV PATH=$PATH:/opt/app/openresty/luajit/bin:/opt/app/nginx/sbin:/opt/app/openre
 COPY supervisord.conf /etc/supervisord.conf
 COPY supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
 COPY supervisor/conf.d/consul-template.conf /etc/supervisor/conf.d/consul-template.conf
-COPY config.hcl /opt/app/consul-template/etc/config.hcl
 COPY nginx.conf.ctmpl /opt/app/nginx/conf/vhost/nginx.conf.ctmpl
 COPY nginx.conf /opt/app/nginx/conf
 
-CMD ["-c", "/etc/supervisord.conf"]
+CMD ["--nodaemon", "-c", "/etc/supervisord.conf"]
 
 ENTRYPOINT ["/usr/bin/supervisord"]
