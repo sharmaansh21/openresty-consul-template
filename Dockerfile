@@ -116,4 +116,6 @@ COPY config.hcl /opt/app/consul-template/etc/config.hcl
 COPY nginx.conf.ctmpl /opt/app/nginx/conf/vhost/nginx.conf.ctmpl
 COPY nginx.conf /opt/app/nginx/conf
 
-ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["-c", "/etc/supervisord.conf"]
+
+ENTRYPOINT ["/usr/bin/supervisord"]
