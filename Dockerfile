@@ -101,13 +101,10 @@ RUN apk add --no-cache --virtual .build-deps \
 ADD https://releases.hashicorp.com/consul-template/${CONSUL_TEMPLATE_VERSION}/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tgz /opt/app/consul-template/bin/consul-template.tgz 
 
 RUN cd /opt/app/consul-template/bin \
-    && ls \
     && tar zxf consul-template.tgz  \
-    && ls -l \
     && chmod +x /opt/app/consul-template/bin/consul-template \
-    && rm consul-template.tgz 
-
-RUN mkdir -p /data/logs/supervisor \
+    && rm consul-template.tgz \
+    && mkdir -p /data/logs/supervisor \
     && ln -sf /dev/stdout /data/logs/supervisor/nginx.log \
     && ln -sf /dev/stdout /data/logs/supervisor/consul-template.log \
     && ln -sf /dev/stderr /data/logs/supervisor/nginx_err.log \
