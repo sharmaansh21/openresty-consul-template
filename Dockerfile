@@ -117,7 +117,7 @@ COPY supervisord.conf /etc/supervisord.conf
 COPY supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
 COPY supervisor/conf.d/consul-template.conf /etc/supervisor/conf.d/consul-template.conf
 COPY nginx.conf.ctmpl /opt/app/nginx/conf/vhost/nginx.conf.ctmpl
-COPY nginx.conf /opt/app/nginx/conf
+COPY nginx.conf /opt/app/nginx/conf/nginx.conf
 
 CMD ["--nodaemon", "-c", "/etc/supervisord.conf"]
 
